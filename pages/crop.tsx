@@ -34,13 +34,15 @@ function Crop() {
     const [croppedArea, setCroppedArea] = useState<Area | null>(null);
     const [zoom, setZoom] = useState<number>(1);
 
+    async function load() {
+        const resp = await fetch('https://images.prismic.io/digitalocean/0b619d51-a723-4748-997f-39ed5697a540_intro-to-cloud.jpg');
+        const img = await resp.blob();
+        setImage(img);
+        setImageSrc(URL.createObjectURL(img));
+    }
+
     useEffect(() => {
-        async function load() {
-            const resp = await fetch('https://thispersondoesnotexist.com/image');
-            const img = await resp.blob();
-            setImage(img);
-            setImageSrc(URL.createObjectURL(img));
-        }
+        
         load();
 
     }, []);

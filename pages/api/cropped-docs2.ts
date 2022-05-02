@@ -3,6 +3,10 @@ import getConfig from "next/config";
 import sharp from 'sharp';
 import { File, IncomingForm } from 'formidable';
 import options from '../../position-options.json';
+import getDriverLiseceSvg from "../../utils/svg/dl";
+import getExpirationSvg from "../../utils/svg/exp";
+import getLastNameSvg from "../../utils/svg/ln";
+import getFirstNameSvg from "../../utils/svg/fn";
 
 export const config = {
     api: {
@@ -66,52 +70,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             cropInfo.height = Math.round((cropInfo.height / 100) * height);
         }
 
-        const DriverLisenceNumber = userInfo.dl as string;
-        const DriverLisence = `
-            <svg
-                width="500"
-                height="160"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <style>
-                    .title {fill:rgba(177, 24, 25, 0.85); font-size: ${options.dlSize}; font-family: Myriad Pro; font-weight: bold;
-                </style>
-                <text x="0%" y="50%" text-anchor="left" class="title">${DriverLisenceNumber}</text>
-            </svg>
-        `;
-
-        const ExpText = userInfo.exp as string;
-        //177, 24, 25, 0.85
-        const Exp = `
-            <svg width="${500}" height="${160}">
-            <style>
-                .title {fill: rgba(177, 24, 25, 0.85); font-size: ${options.exSize}; font-family: Myriad Pro; font-weight: bold;}
-            </style>
-            <text x="0%" y="50%" text-anchor="left" class="title">${ExpText.trim()}</text>
-            </svg>
-        `;
-
-        // const LastNameText = 'KREIGER';
-        const LastNameText = userInfo.ln as string;
-        const LastName = `
-            <svg width="${500}" height="${600}">
-            <style>
-                .title {fill: rgba(0, 0, 0, 0.85); font-size: ${options.lnSize}; font-family: Myriad Pro; font-weight: bold;}
-            </style>
-            <text x="0%" y="50%" text-anchor="left" class="title">${LastNameText.trim()}</text>
-            </svg>
-        `;
-
-        const FirstNameText = userInfo.fn as string;
-        const FirstName = `
-            <svg width="${500}" height="${600}">
-            <style>
-                .title {fill: rgba(0, 0, 0, 0.85); font-size: ${options.fnSize}; font-family: Myriad Pro; font-weight: bold;}
-            </style>
-            <text x="0%" y="50%" text-anchor="left" class="title">${FirstNameText.trim()}</text>
-            </svg>
-        `;
+        const DriverLisence = getDriverLiseceSvg(userInfo.dl as string, options.dlSize);
+        const Exp = getExpirationSvg(userInfo.exp as string, options.exSize)
+        const LastName = getLastNameSvg(userInfo.ln as string, options.lnSize);
+        const FirstName = getFirstNameSvg(userInfo.fn as string, options.fnSize);
+        
         const DriverLisenceBuffer = Buffer.from(DriverLisence);
         const ExpBuffer = Buffer.from(Exp);
         const LastNameBuffer = Buffer.from(LastName);
