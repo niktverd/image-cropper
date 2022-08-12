@@ -4,7 +4,7 @@ import { File } from 'formidable'
 import path from 'path';
 import {writeFileSync, mkdirSync, readdirSync, unlinkSync } from "fs";
 import {shuffle} from 'lodash';
-import fng from 'fakenamegenerator';
+const fng = require('fakenamegenerator');
 
 import options from '../../../position-options.json';
 

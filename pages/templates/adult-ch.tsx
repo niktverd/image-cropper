@@ -3,7 +3,7 @@ import Cropper from "react-easy-crop";
 import { Area, Point } from "react-easy-crop/types";
 import styles from "../../styles/Crops.module.css";
 
-function readFile(file) {
+function readFile(file: any) {
     return new Promise((resolve) => {
       const reader = new FileReader()
       reader.addEventListener('load', () => resolve(reader.result), false)
@@ -89,7 +89,7 @@ class Crop extends React.Component<{}, State> {
         });
     }
 
-    onFileChange = async (e) => {
+    onFileChange = async (e: any) => {
         if (e.target.files && e.target.files.length > 0) {
           const file = e.target.files[0]
           let imageDataUrl = await readFile(file)
@@ -102,7 +102,7 @@ class Crop extends React.Component<{}, State> {
         //   }
         this.setState({
             image: file,
-            imageSrc: imageDataUrl,
+            imageSrc: imageDataUrl as string,
         });
       }
     }

@@ -70,7 +70,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         //     cropInfo.width = Math.round((cropInfo.width / 100) * width);
         //     cropInfo.height = Math.round((cropInfo.height / 100) * height);
         // }
-        const getChineeseText = (getterForSvg) => {
+        const getChineeseText = (getterForSvg: any) => {
             const bottomColor = genColors();
             const resizeBottom = 0.85 + 0.1 * Math.random();
             const chLeft = getterForSvg({...bottomColor, resize: resizeBottom});
