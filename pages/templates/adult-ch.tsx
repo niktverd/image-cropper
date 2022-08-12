@@ -1,7 +1,15 @@
 import React from "react";
 import Cropper from "react-easy-crop";
 import { Area, Point } from "react-easy-crop/types";
-import styles from "../styles/Crops.module.css";
+import styles from "../../styles/Crops.module.css";
+
+function readFile(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.addEventListener('load', () => resolve(reader.result), false)
+      reader.readAsDataURL(file)
+    })
+  }
 
 type CroppedImageSize = "small" | "medium" | "large";
 
@@ -9,10 +17,6 @@ type State = {
     image: Blob | null;
     imageSrc: string;
     croppedImage: string;
-    driverLisence: string;
-    expired: string;
-    lastName: string;
-    firstName: string;
     // dlPos: string;
     crop: Point;
     rotation: number;
@@ -32,16 +36,11 @@ class Crop extends React.Component<{}, State> {
         image: null,
         imageSrc: '',
         croppedImage: '',
-        driverLisence: 'X3377976',
-        expired: '04/05/2025',
-        lastName: 'KREIGER',
-        firstName: 'YASMIN',
-        // dlPos: '{"dlPosTop":96,"dlPosLeft":269,"dlSize":"32px","exPosTop":132,"exPosLeft":283,"exSize":"26px","lnPosTop":160,"lnPosLeft":275,"lnSize":"16px","fnPosTop":185,"fnPosLeft":275,"fnSize":"16px"}',
         crop: { x: 0, y: 0 },
         rotation: 0,
         flip: { horizontal: false, vertical: false },
         zoom: 1,
-        aspect: 21.25 / 28.02,
+        aspect: 1,
         cropShape: "rect",
         showGrid: true,
         zoomSpeed: 1,
@@ -79,13 +78,36 @@ class Crop extends React.Component<{}, State> {
         console.log("user interaction ended");
     };
 
+
+    
     handleFileChange = (e: any) => {
+        console.log('handleFileChange', e.target.files);
         const img = e.target.files[0];
         this.setState({
             image: img,
             imageSrc: URL.createObjectURL(e.target.files[0]),
         });
     }
+
+    onFileChange = async (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          const file = e.target.files[0]
+          let imageDataUrl = await readFile(file)
+    
+          // apply rotation if needed
+        //   const orientation = await getOrientation(file)
+        //   const rotation = ORIENTATION_TO_ANGLE[orientation]
+        //   if (rotation) {
+        //     imageDataUrl = await getRotatedImage(imageDataUrl, rotation)
+        //   }
+        this.setState({
+            image: file,
+            imageSrc: imageDataUrl,
+        });
+      }
+    }
+
+    
 
 
     uploadToServer = async (event: any) => {
@@ -98,10 +120,6 @@ class Crop extends React.Component<{}, State> {
             ...this.state.croppedArea,
             rotation: String(this.state.rotation),
             croppedImageSize: this.state.croppedImageSize,
-            dl: this.state.driverLisence,
-            exp: this.state.expired,
-            ln: this.state.lastName,
-            fn: this.state.firstName,
             // options: this.state.dlPos,
         }
         const url = new URLSearchParams(params);
@@ -111,33 +129,15 @@ class Crop extends React.Component<{}, State> {
             method: "POST",
             body
         });
-        // const response = await fetch(`/api/test?${url.toString()}`, {
-        //     method: "POST",
-        //     body
-        // });
+        
         const imageImage = await response.blob()
         console.log(imageImage);
         console.log(URL.createObjectURL(imageImage));
         this.setState({croppedImage: URL.createObjectURL(imageImage)});
     };
-
-    handleTextChangeDl = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({driverLisence: event.target.value});
-    }
-    handleTextChangeExp = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({expired: event.target.value});
-    }
-    handleTextChangeLn = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({lastName: event.target.value});
-    }
-    handleTextChangeFn = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({firstName: event.target.value});
-    }
-    // handleTextChangeDlPos = (event: React.ChangeEvent<HTMLInputElement>) => {
-    //     this.setState({dlPos: event.target.value});
-    // }
     
     render() {
+        console.log('imageSrc', this.state);
 
         if (this.state.croppedImage) {
             return <div>
@@ -163,48 +163,8 @@ class Crop extends React.Component<{}, State> {
                     <div>.</div>
                     <div>.</div>
                     <div>
-                        <input type="file" accept="image/*" onChange={this.handleFileChange} />
+                        <input type="file" accept="image/*" onChange={this.onFileChange} />
                     </div>
-                    <div>
-                        <input
-                            type="text"
-                            name='driverLisence'
-                            value={this.state.driverLisence}
-                            onChange={this.handleTextChangeDl}
-                        />
-                    </div>
-                    <div>
-                        <input
-                            type="text"
-                            name='expired'
-                            value={this.state.expired}
-                            onChange={this.handleTextChangeExp}
-                        />
-                    </div>
-                    <div>
-                        <input
-                            type="text"
-                            name='lastName'
-                            value={this.state.lastName}
-                            onChange={this.handleTextChangeLn}
-                        />
-                    </div>
-                    <div>
-                        <input
-                            type="text"
-                            name='firstName'
-                            value={this.state.firstName}
-                            onChange={this.handleTextChangeFn}
-                        />
-                    </div>
-                    {/* <div>
-                        <input
-                            type="text"
-                            name='dlPos'
-                            value={this.state.dlPos}
-                            onChange={this.handleTextChangeDlPos}
-                        />
-                    </div> */}
                 </div>
                     <div>
                         <button
@@ -216,8 +176,7 @@ class Crop extends React.Component<{}, State> {
                 
                 <div className={styles["crop-container"]}>
                     <Cropper
-                        // image={this.state.imageSrc}
-                        image={"template.png"}
+                        image={this.state.imageSrc}
                         crop={this.state.crop}
                         rotation={this.state.rotation}
                         zoom={this.state.zoom}
