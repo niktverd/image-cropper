@@ -1,0 +1,19 @@
+.container {
+    position: relative;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.cropper {
+    position: relative;
+    min-width: 40%;
+    height: 75vh;
+    width: 50%;
+}
+
+.controls {
+    flex-grow: 1;
+    padding: 20px;
+}
