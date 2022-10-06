@@ -17,7 +17,7 @@ function randomExpired() {
 
 const Demo = () => {
     const [imgFile, setImgFile] = React.useState(null);
-    const [imageSrc, setImageSrc] = React.useState(null);
+    const [imageSrc, setImageSrc] = React.useState<unknown>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [ration, setRatio] = useState(428/564);
@@ -44,14 +44,14 @@ const Demo = () => {
         }, 10);
     }, [stepX])
 
-    const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
     const showCroppedImage = useCallback(async () => {
         try {
             uploadToServer();
-            console.log("donee", { croppedImage });
+            console.log("done", { croppedImage });
             setCroppedImage(croppedImage);
         } catch (e) {
             console.error(e);
@@ -62,7 +62,7 @@ const Demo = () => {
         setCroppedImage(null);
     }, []);
 
-    const onFileChange = async (e) => {
+    const onFileChange = async (e: any) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
             let imageDataUrl = await readFile(file);
@@ -79,7 +79,7 @@ const Demo = () => {
         }
         type SearchParamType = {};
         const params: SearchParamType = {
-            ...croppedAreaPixels,
+            ...(croppedAreaPixels as unknown as object),
             rotation: String(0),
             croppedImageSize: "small",
             dl: driverLicense,
@@ -89,7 +89,7 @@ const Demo = () => {
         };
         const url = new URLSearchParams(params);
         const body = new FormData();
-        body.append("file", imgFile, "fileName");
+        body.append("file", imgFile as unknown as string, "fileName");
         const response = await fetch(
             `/api/cropped-docs2?${url.toString()}`,
             {
@@ -101,10 +101,10 @@ const Demo = () => {
         const imageImage = await response.blob();
         console.log(imageImage);
         console.log(URL.createObjectURL(imageImage));
-        setCroppedImage(URL.createObjectURL(imageImage));
+        setCroppedImage(URL.createObjectURL(imageImage) as unknown as null);
     };
     if (croppedImage) {
-        return <img src={croppedImage} height={400} widht={400} />;
+        return <img src={croppedImage ?? ''} height={400} width={400} />;
     }
 
     return (
@@ -114,13 +114,12 @@ const Demo = () => {
                     <div className={styles.container}>
                         <div className={styles.cropper}>
                             <Cropper
-                                className={styles.cropper}
-                                image={imageSrc}
+                                // className={styles.cropper}
+                                image={imageSrc as string}
                                 crop={crop}
                                 rotation={rotation}
                                 zoom={zoom}
                                 aspect={ration}
-                                onCropChange={setCrop}
                                 onCropChange={setCrop}
                                 onRotationChange={setRotation}
                                 onCropComplete={onCropComplete}
@@ -137,7 +136,7 @@ const Demo = () => {
                                     max={3}
                                     step={0.05}
                                     aria-labelledby="Zoom"
-                                    onChange={(e, zoom) => setZoom(zoom)}
+                                    onChange={(e, zoom) => setZoom(zoom as number)}
                                 />
                             </div>
                             <div>
@@ -151,7 +150,7 @@ const Demo = () => {
                                     step={1}
                                     aria-labelledby="Rotation"
                                     onChange={(e, rotation) =>
-                                        setRotation(rotation)
+                                        setRotation(rotation as number)
                                     }
                                 />
                             </div>
@@ -189,7 +188,7 @@ const Demo = () => {
     );
 };
 
-function readFile(file) {
+function readFile(file: any) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.addEventListener("load", () => resolve(reader.result), false);
