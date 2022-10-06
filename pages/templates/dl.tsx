@@ -104,7 +104,7 @@ const Demo = () => {
         setCroppedImage(URL.createObjectURL(imageImage) as unknown as null);
     };
     if (croppedImage) {
-        return <img src={croppedImage ?? ''} height={400} width={400} />;
+        return <img src={croppedImage ?? ''} height={400} width="auto" />;
     }
 
     return (
