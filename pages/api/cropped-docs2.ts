@@ -25,7 +25,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         image = fields.file;
         if (isFile(files.file)) {
             const imgBuffer = await crop(files?.file?.filepath);
-            res.setHeader('Content-Type', 'image/png');
+            res.setHeader('Content-Type', 'image/gif');
             return res.status(200).send(imgBuffer);
         }
         return res.status(400).send("");
@@ -64,26 +64,30 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const width = meta.width;
 
         if (height !== undefined && width !== undefined) {
-            cropInfo.top = Math.round((cropInfo.top / 100) * height);
-            cropInfo.left = Math.round((cropInfo.left / 100) * width);
-            cropInfo.width = Math.round((cropInfo.width / 100) * width);
-            cropInfo.height = Math.round((cropInfo.height / 100) * height);
+            // cropInfo.top = Math.round((cropInfo.top / 100) * height);
+            // cropInfo.left = Math.round((cropInfo.left / 100) * width);
+            // cropInfo.width = Math.round((cropInfo.width / 100) * width);
+            // cropInfo.height = Math.round((cropInfo.height / 100) * height);
         }
+        console.log(`cropped...`,);
 
         const DriverLisence = getDriverLiseceSvg(userInfo.dl as string, options.dlSize);
         const Exp = getExpirationSvg(userInfo.exp as string, options.exSize)
         const LastName = getLastNameSvg(userInfo.ln as string, options.lnSize);
         const FirstName = getFirstNameSvg(userInfo.fn as string, options.fnSize);
+        console.log(`Svg received...`,);
         
         const DriverLisenceBuffer = Buffer.from(DriverLisence);
         const ExpBuffer = Buffer.from(Exp);
         const LastNameBuffer = Buffer.from(LastName);
         const FirstNameBuffer = Buffer.from(FirstName);
+        console.log(`SVG loaded...`,);
         
         // const ready = await sharp('public/ready.jpg').resize(1410, 888);
         const template = await sharp('public/template.png').resize(1410, 888);
         const templateBuf = await template.toBuffer();
         const dogImageCropped = dogImage.extract(cropInfo);
+        console.log(`Base prepared...`,);
         return await template
             .composite([
                 {
@@ -101,11 +105,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                     top: 0,
                     left: 0,
                 },
-                // {
-                //     input: await ready.toBuffer(),
-                //     top: 0,
-                //     left: 0,
-                // },
+                
                 {
                     input: DriverLisenceBuffer,
                     top: options.dlPosTop,
@@ -127,7 +127,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                     left: options.fnPosLeft,
                 },
             ])
-            .png()
+            .gif()
             .toBuffer();
     }
 
