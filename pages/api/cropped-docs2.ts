@@ -44,6 +44,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         ln: req.query.ln,
         fn: req.query.fn,
     };
+
+    console.log({userInfo});
     async function crop(imgPath: string) {
         const dogImage = sharp(imgPath);
         dogImage.metadata()

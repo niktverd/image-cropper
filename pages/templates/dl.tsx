@@ -12,7 +12,7 @@ function randomDriverLicense() {
 }
 
 function randomExpired() {
-    return moment().add(Math.round(Math.random() * 5000) + 500, 'days').format('MM/DD/YYYY');
+    return moment().add(Math.round(Math.random() * 1100) + 500, 'days').format('MM/DD/YYYY');
 }
 
 const Demo = () => {
@@ -48,9 +48,10 @@ const Demo = () => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
-    const showCroppedImage = useCallback(async () => {
+    const showCroppedImage = useCallback(async (data: any) => {
         try {
-            uploadToServer();
+            uploadToServer({driverLicense: data.driverLicense, expired:data.expired, firstName: data.firstName, lastName: data.lastName});
+            console.log({driverLicense, expired, firstName, lastName});
             console.log("done", { croppedImage });
             setCroppedImage(croppedImage);
         } catch (e) {
@@ -73,7 +74,7 @@ const Demo = () => {
         }
     };
 
-    const uploadToServer = async () => {
+    const uploadToServer = async (data: any) => {
         if (!imageSrc) {
             return;
         }
@@ -82,11 +83,13 @@ const Demo = () => {
             ...(croppedAreaPixels as unknown as object),
             rotation: String(0),
             croppedImageSize: "small",
-            dl: driverLicense,
-            exp: expired,
-            ln: lastName,
-            fn: firstName,
+            dl: (data.driverLicense ?? '').toUpperCase(),
+            exp: (data.expired ?? '').toUpperCase(),
+            ln: (data.lastName ?? '').toUpperCase(),
+            fn: (data.firstName ?? '').toUpperCase(),
         };
+
+        console.log({params, lastName, firstName});
         const url = new URLSearchParams(params);
         const body = new FormData();
         body.append("file", imgFile as unknown as string, "fileName");
@@ -169,7 +172,7 @@ const Demo = () => {
                                 <input value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
                             </div>
                             <Button
-                                onClick={showCroppedImage}
+                                onClick={() => showCroppedImage({driverLicense, expired, firstName, lastName})}
                                 variant="contained"
                                 color="primary"
                             >
