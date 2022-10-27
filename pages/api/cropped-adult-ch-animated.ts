@@ -183,7 +183,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         await exec(`"${pathToFfmpeg}" -start_number 1 -i ${outputFolder}/%d.png -vcodec ${videoEncoder} -pix_fmt yuv420p ${outFolder}/video/no-audio.mp4`);
 
         // Copy audio from original video
-        console.log('Adding audio');
+        console.log('Adding audio', audio);
         await exec(`"${pathToFfmpeg}" -i ${outFolder}/video/no-audio.mp4 -i ${audio} -shortest ${outFolder}/video/with-audio-${new Date().getTime()}.mp4`);
 
         console.log('done');
