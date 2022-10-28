@@ -1,9 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import sharp from 'sharp';
-import { File, IncomingForm } from 'formidable';
+import { IncomingForm } from 'formidable';
 import getChAdultBottomSvg from "../../utils/svg/chineese-adult/chineese-bottom-ink";
-
-import {genColors} from '../../utils/genColors';
 import getChAdultTopSvg from "../../utils/svg/chineese-adult/chineese-top-ink";
 import getChAdultCenterSvg from "../../utils/svg/chineese-adult/chineese-center-ink";
 import getChAdultLeftSvg from "../../utils/svg/chineese-adult/chineese-left-ink";
@@ -15,6 +13,8 @@ import pathToFfmpeg from 'ffmpeg-static';
 import util from 'util';
 import {exec as _exec} from 'child_process';
 import { shuffle } from "lodash";
+import { isFile, prepareParams } from "../../utils/common";
+import { getChineeseText, getSvgByVariant } from "../../utils/svg";
 
 const exec = util.promisify(_exec);
 
@@ -32,10 +32,6 @@ export const config = {
     }
 };
 
-const isFile = (file: File | File[]): file is File => {
-    return (file as File).filepath !== undefined;
-}
-
 const outFolder = './out';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -51,13 +47,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).send("");
     });
 
-    const rotation = parseFloat((req.query.rotation as string) ?? "0");
-    const cropInfo = {
-        left: parseFloat((req.query.x as string) ?? "0"),
-        top: parseFloat((req.query.y as string) ?? "0"),
-        width: parseFloat((req.query.width as string) ?? "100"),
-        height: parseFloat((req.query.height as string) ?? "100")
-    };
+    const {amplitude, rotation, duration, cropInfo, variant} = prepareParams(req);
     
     async function crop(imgPath: string) {
         const dogImage = sharp(imgPath);
@@ -75,17 +65,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         console.log(`Cropping...`, cropInfo);
 
-        const getChineeseText = (getterForSvg: any) => {
-            const bottomColor = genColors();
-            const resizeBottom = 0.85 + 0.1 * Math.random();
-            const chLeft = getterForSvg({...bottomColor, resize: resizeBottom});
-            console.log(chLeft);
-            return Buffer.from(chLeft);
-        }
-        const chBottom = getChineeseText(getChAdultBottomSvg);
-        const chTop = getChineeseText(getChAdultTopSvg);
-        const chCenter = getChineeseText(getChAdultCenterSvg);
-        const chLeft = getChineeseText(getChAdultLeftSvg);
+        const svgs = getSvgByVariant(variant);
+
+        const chBottom = getChineeseText(svgs.bottom);
+        const chTop = getChineeseText(svgs.top);
+        const chCenter = getChineeseText(svgs.center);
+        const chLeft = getChineeseText(svgs.left);
         
         console.log('got here - 3');
         const dogImageCropped = dogImage.extract(cropInfo);
@@ -96,28 +81,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             input: chBottom,
             topBase: 700 + Math.floor(90 * Math.random()),
             leftBase: 210 + Math.floor(50 * Math.random()),
-            maxDistance: 10,
+            maxDistance: amplitude,
         });
 
         const wTop  = wiggle({
             input: chTop,
             topBase: 0 + Math.floor(90 * Math.random()),
             leftBase: 190 + Math.floor(90 * Math.random()),
-            maxDistance: 10,
+            maxDistance: amplitude,
         });
 
         const wCenter  = wiggle({
             input: chCenter,
             topBase: 500 + Math.floor(120 * Math.random()),
             leftBase: 220 + Math.floor(50 * Math.random()),
-            maxDistance: 10,
+            maxDistance: amplitude,
         });
 
         const wLeft  = wiggle({
             input: chLeft,
             topBase: 0 + Math.floor(90 * Math.random()),
             leftBase: 0 + Math.floor(90 * Math.random()),
-            maxDistance: 10,
+            maxDistance: amplitude,
         });
 
         if(!existsSync(outFolder)) {
@@ -145,7 +130,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             unlinkSync(`${outFolder}/video/${f}`);
         }
 
-        for (let i = 0; i < 300; i++) {
+        for (let i = 0; i < duration; i++) {
             if (i % 20 === 0) {
                 console.log({i});
             }
@@ -187,40 +172,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         await exec(`"${pathToFfmpeg}" -i ${outFolder}/video/no-audio.mp4 -i ${audio} -shortest ${outFolder}/video/with-audio-${new Date().getTime()}.mp4`);
 
         console.log('done');
-
-        // const ffvide0 = images.reduce((result, inputItem) => {
-        //     console.log(inputItem);
-            
-        //     return result.input(inputItem);
-        // }, ffmpeg())
-
-        // ffvide0
-        //     .size('320x200')
-        //     .aspect('1:1')
-        //     // .autopad()
-        //     // .loop(4)
-        //     // .outputFPS(24)
-        //     // .frames(30)
-        //     // .outputOptions('-pix_fmt yuv420p')
-        //     .output(`${outFolder}/video/video-${new Date().getTime()}.mp4`)
-
-        //     // .save(`${outFolder}/video/video-${new Date().getTime()}.mp4`)
-        //     .on('start', function(stderrLine) {
-        //         console.log('start output: ' + stderrLine);
-        //     })
-        //     .on('stderr', function(stderrLine) {
-        //         console.log('Stderr output: ' + stderrLine);
-        //     })
-        //     .on('error', function(err, stdout, stderr) {
-        //         console.log('Cannot process video: ' + err.message);
-        //     })
-        //     .on('end', function(stdout, stderr) {
-        //         console.log('Transcoding succeeded !');
-        //     })
-        //     .run();
-
-
-        
 
         return await dogImageResized
             .composite([

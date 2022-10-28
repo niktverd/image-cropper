@@ -1,19 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
-import Slider from "@material-ui/core/Slider";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import moment from 'moment';
+import { CropControls } from "../../src/components/CropControls/CropControls";
 
 import styles from "../../styles/DefaultCrop.module.css";
-
-function randomDriverLicense() {
-    return `X${1000000 + Math.round(Math.random()*8999999)}`;
-}
-
-function randomExpired() {
-    return moment().add(Math.round(Math.random() * 1100) + 500, 'days').format('MM/DD/YYYY');
-}
 
 const Demo = () => {
     const [imgFileWhite, setImgFileWhite] = React.useState(null);
@@ -24,15 +13,13 @@ const Demo = () => {
     const [cropBlack, setCropBlack] = useState({ x: 0, y: 0 });
     const [zoomWhite, setZoomWhite] = useState(1);
     const [zoomBlack, setZoomBlack] = useState(1);
+    const [amplitude, setAmplitude] = useState(10);
+    const [duration, setDuration] = useState(350);
     const [ration, setRatio] = useState(994/994);
     const [rotation, setRotation] = useState(0);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [croppedAreaPixelsBlack, setCroppedAreaPixelsBlack] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
-    // const [driverLicense, setDriverLicense] = useState(randomDriverLicense());
-    // const [expired, setExpired] = useState(randomExpired());
-    // const [lastName, setLastName] = useState('');
-    // const [firstName, setFirstName] = useState('');
 
     const [x, setX] = useState(50);
     const [y, setY] = useState(50);
@@ -60,13 +47,11 @@ const Demo = () => {
     const showCroppedImage = useCallback(async () => {
         try {
             await uploadToServer();
-            // console.log({driverLicense, expired, firstName, lastName});
-            console.log("done", { croppedImage });
             setCroppedImage(croppedImage);
         } catch (e) {
             console.error(e);
         }
-    }, [imageSrcWhite, croppedAreaPixels, rotation]);
+    }, [imageSrcWhite, croppedAreaPixels, rotation, amplitude, duration]);
 
     const onClose = useCallback(() => {
         setCroppedImage(null);
@@ -115,6 +100,8 @@ const Demo = () => {
             heightBlack: black.height,
             rotation: String(0),
             croppedImageSize: "small",
+            amplitude: String(amplitude), 
+            duration: String(duration),
         };
 
         const url = new URLSearchParams(params);
@@ -158,42 +145,18 @@ const Demo = () => {
                                 onZoomChange={setZoomWhite}
                             />
                         </div>
-
-                        <div className={styles.controls}>
-                            <div>
-                                <Typography variant="overline">Zoom</Typography>
-                                <Slider
-                                    value={zoomWhite}
-                                    min={1}
-                                    max={3}
-                                    step={0.05}
-                                    aria-labelledby="Zoom"
-                                    onChange={(e, zoom) => setZoomWhite(zoom as number)}
-                                />
-                            </div>
-                            <div>
-                                <Typography variant="overline">
-                                    Rotation
-                                </Typography>
-                                <Slider
-                                    value={rotation}
-                                    min={0}
-                                    max={360}
-                                    step={1}
-                                    aria-labelledby="Rotation"
-                                    onChange={(e, rotation) =>
-                                        setRotation(rotation as number)
-                                    }
-                                />
-                            </div>
-                            <Button
-                                onClick={() => showCroppedImage()}
-                                variant="contained"
-                                color="primary"
-                            >
-                                Show Result
-                            </Button>
-                        </div>
+                        <CropControls
+                            className={styles.controls}
+                            zoom={zoomWhite}
+                            setZoom={setZoomWhite}
+                            // rotation={rotation}
+                            // setRotation={setRotation}
+                            duration={duration}
+                            setDuration={setDuration}
+                            amplitude={amplitude}
+                            setAmplitude={setAmplitude}
+                            showCroppedImage={showCroppedImage}
+                        />
                     </div>
                 </React.Fragment>
             ) : (
@@ -218,34 +181,18 @@ const Demo = () => {
                             />
                         </div>
 
-                        <div className={styles.controls}>
-                            <div>
-                                <Typography variant="overline">Zoom</Typography>
-                                <Slider
-                                    value={zoomBlack}
-                                    min={1}
-                                    max={3}
-                                    step={0.05}
-                                    aria-labelledby="Zoom"
-                                    onChange={(e, zoom) => setZoomBlack(zoom as number)}
-                                />
-                            </div>
-                            <div>
-                                <Typography variant="overline">
-                                    Rotation
-                                </Typography>
-                                <Slider
-                                    value={rotation}
-                                    min={0}
-                                    max={360}
-                                    step={1}
-                                    aria-labelledby="Rotation"
-                                    onChange={(e, rotation) =>
-                                        setRotation(rotation as number)
-                                    }
-                                />
-                            </div>
-                        </div>
+                        <CropControls
+                            className={styles.controls}
+                            zoom={zoomBlack}
+                            setZoom={setZoomBlack}
+                            // rotation={rotation}
+                            // setRotation={setRotation}
+                            // duration={duration}
+                            // setDuration={setDuration}
+                            // amplitude={amplitude}
+                            // setAmplitude={setAmplitude}
+                            // showCroppedImage={showCroppedImage}
+                        />
                     </div>
                 </React.Fragment>
             ) : (

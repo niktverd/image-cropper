@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import sharp from 'sharp';
-import { File, IncomingForm } from 'formidable';
-import getChAdultBottomSvg from "../../utils/svg/chineese-adult/chineese-bottom-ink";
+import { IncomingForm } from 'formidable';
+// import getChAdultBottomSvg from "../../utils/svg/chineese-adult/chineese-bottom-ink";
 
-import {genColors} from '../../utils/genColors';
-import getChAdultTopSvg from "../../utils/svg/chineese-adult/chineese-top-ink";
-import getChAdultCenterSvg from "../../utils/svg/chineese-adult/chineese-center-ink";
-import getChAdultLeftSvg from "../../utils/svg/chineese-adult/chineese-left-ink";
+// import {genColors} from '../../utils/genColors';
+// import getChAdultTopSvg from "../../utils/svg/chineese-adult/chineese-top-ink";
+// import getChAdultCenterSvg from "../../utils/svg/chineese-adult/chineese-center-ink";
+// import getChAdultLeftSvg from "../../utils/svg/chineese-adult/chineese-left-ink";
 import { wiggle } from "../../utils/wiggle";
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
 
@@ -15,6 +15,8 @@ import pathToFfmpeg from 'ffmpeg-static';
 import util from 'util';
 import {exec as _exec} from 'child_process';
 import { shuffle } from "lodash";
+import { isFile, prepareParams } from "../../utils/common";
+import { getChineeseText, getSvgByVariant } from "../../utils/svg";
 
 const exec = util.promisify(_exec);
 
@@ -38,9 +40,9 @@ export const config = {
     }
 };
 
-const isFile = (file: File | File[]): file is File => {
-    return (file as File).filepath !== undefined;
-}
+// const isFile = (file: File | File[]): file is File => {
+//     return (file as File).filepath !== undefined;
+// }
 
 const outFolder = './out';
 
@@ -48,7 +50,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     console.log('start handler');
     const form = new IncomingForm();
     let image = null;
-    form.parse(req, async function (err, fields, files) {
+    form.parse(req, async function (_err, fields, files) {
         console.log(files);
         image = fields.file;
         if (isFile(files.file) && isFile(files?.fileBlack)) {
@@ -60,20 +62,21 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         }
         return res.status(400).send("");
     });
+    const {rotation, cropInfo, cropInfoBlack, variant} = prepareParams(req);
 
-    const rotation = parseFloat((req.query.rotation as string) ?? "0");
-    const cropInfo = {
-        left: parseFloat((req.query.x as string) ?? "0"),
-        top: parseFloat((req.query.y as string) ?? "0"),
-        width: parseFloat((req.query.width as string) ?? "100"),
-        height: parseFloat((req.query.height as string) ?? "100")
-    };
-    const cropInfoBlack = {
-        left: parseFloat((req.query.xBlack as string) ?? "0"),
-        top: parseFloat((req.query.yBlack as string) ?? "0"),
-        width: parseFloat((req.query.widthBlack as string) ?? "100"),
-        height: parseFloat((req.query.heightBlack as string) ?? "100")
-    };
+    // const rotation = parseFloat((req.query.rotation as string) ?? "0");
+    // const cropInfo = {
+    //     left: parseFloat((req.query.x as string) ?? "0"),
+    //     top: parseFloat((req.query.y as string) ?? "0"),
+    //     width: parseFloat((req.query.width as string) ?? "100"),
+    //     height: parseFloat((req.query.height as string) ?? "100")
+    // };
+    // const cropInfoBlack = {
+    //     left: parseFloat((req.query.xBlack as string) ?? "0"),
+    //     top: parseFloat((req.query.yBlack as string) ?? "0"),
+    //     width: parseFloat((req.query.widthBlack as string) ?? "100"),
+    //     height: parseFloat((req.query.heightBlack as string) ?? "100")
+    // };
     
     async function crop(imgPath: string, imgPathBlack?: string) {
         const dogImage = sharp(imgPath);
@@ -91,17 +94,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         console.log(`Cropping...`, cropInfo);
 
-        const getChineeseText = (getterForSvg: any) => {
-            const bottomColor = genColors();
-            const resizeBottom = 0.85 + 0.1 * Math.random();
-            const chLeft = getterForSvg({...bottomColor, resize: resizeBottom});
-            // console.log(chLeft);
-            return Buffer.from(chLeft);
-        }
-        const chBottom = getChineeseText(getChAdultBottomSvg);
-        const chTop = getChineeseText(getChAdultTopSvg);
-        const chCenter = getChineeseText(getChAdultCenterSvg);
-        const chLeft = getChineeseText(getChAdultLeftSvg);
+        const svgs = getSvgByVariant(variant);
+
+        // const chBottom = getChineeseText(getChAdultBottomSvg);
+        // const chTop = getChineeseText(getChAdultTopSvg);
+        // const chCenter = getChineeseText(getChAdultCenterSvg);
+        // const chLeft = getChineeseText(getChAdultLeftSvg);
         
         console.log('got here - 3');
         const dogImageCropped = dogImage.extract(cropInfo);
@@ -110,28 +108,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const dogImageResized = dogImageCropped.resize(size, size);
 
         const wBottom  = wiggle({
-            input: chBottom,
+            input: getChineeseText(svgs.bottom),
             topBase: 700 + Math.floor(90 * Math.random()),
             leftBase: 210 + Math.floor(50 * Math.random()),
             maxDistance: 10,
         });
 
         const wTop  = wiggle({
-            input: chTop,
+            input: getChineeseText(svgs.top),
             topBase: 0 + Math.floor(90 * Math.random()),
             leftBase: 190 + Math.floor(90 * Math.random()),
             maxDistance: 10,
         });
 
         const wCenter  = wiggle({
-            input: chCenter,
+            input: getChineeseText(svgs.center),
             topBase: 500 + Math.floor(120 * Math.random()),
             leftBase: 220 + Math.floor(50 * Math.random()),
             maxDistance: 10,
         });
 
         const wLeft  = wiggle({
-            input: chLeft,
+            input: getChineeseText(svgs.left),
             topBase: 0 + Math.floor(90 * Math.random()),
             leftBase: 0 + Math.floor(90 * Math.random()),
             maxDistance: 10,
@@ -223,22 +221,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return await dogImageResized
             .composite([
                 {
-                    input: chBottom,
+                    input: getChineeseText(svgs.bottom),
                     top: 700 + Math.floor(90 * Math.random()),
                     left: 210 + Math.floor(50 * Math.random()),
                 },
                 {
-                    input: chTop,
+                    input: getChineeseText(svgs.top),
                     top: 0 + Math.floor(90 * Math.random()),
                     left: 210 + Math.floor(90 * Math.random()),
                 },
                 {
-                    input: chCenter,
+                    input: getChineeseText(svgs.center),
                     top: 500 + Math.floor(120 * Math.random()),
                     left: 220 + Math.floor(50 * Math.random()),
                 },
                 {
-                    input: chLeft,
+                    input: getChineeseText(svgs.left),
                     top: 0 + Math.floor(90 * Math.random()),
                     left: 0 + Math.floor(90 * Math.random()),
                 },

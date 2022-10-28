@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
-import Slider from "@material-ui/core/Slider";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
+import { CropControls } from "../../src/components/CropControls/CropControls";
 
 import styles from "../../styles/DefaultCrop.module.css";
 
@@ -13,6 +11,8 @@ const Demo = () => {
     const [zoom, setZoom] = useState(1);
     const [ration, setRatio] = useState(1);
     const [rotation, setRotation] = useState(0);
+    const [amplitude, setAmplitude] = useState(10);
+    const [duration, setDuration] = useState(350);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
 
@@ -38,16 +38,16 @@ const Demo = () => {
     const showCroppedImage = useCallback(async () => {
         try {
             uploadToServer();
-            console.log("donee", { croppedImage });
+            // console.log("donee", { croppedImage });
             setCroppedImage(croppedImage);
         } catch (e) {
             console.error(e);
         }
-    }, [imageSrc, croppedAreaPixels, rotation]);
+    }, [imageSrc, croppedAreaPixels, rotation, amplitude, duration]);
 
-    const onClose = useCallback(() => {
-        setCroppedImage(null);
-    }, []);
+    // const onClose = useCallback(() => {
+    //     setCroppedImage(null);
+    // }, []);
 
     const onFileChange = async (e: any) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -68,9 +68,12 @@ const Demo = () => {
         const params: SearchParamType = {
             ...(croppedAreaPixels as unknown as object),
             rotation: String(0),
+            amplitude: String(amplitude), 
+            duration: String(duration), 
             croppedImageSize: "small",
         };
         const url = new URLSearchParams(params);
+        // console.log({amplitude, url});
         const body = new FormData();
         body.append("file", imgFile as unknown as string, "fileName");
         const response = await fetch(
@@ -82,8 +85,8 @@ const Demo = () => {
         );
 
         const imageImage = await response.blob();
-        console.log(imageImage);
-        console.log(URL.createObjectURL(imageImage));
+        // console.log(imageImage);
+        // console.log(URL.createObjectURL(imageImage));
         setCroppedImage(URL.createObjectURL(imageImage) as unknown as (prevState: null) => null);
     };
     if (croppedImage) {
@@ -110,48 +113,25 @@ const Demo = () => {
                             />
                         </div>
 
-                        <div className={styles.controls}>
-                            <div>
-                                <Typography variant="overline">Zoom</Typography>
-                                <Slider
-                                    value={zoom}
-                                    min={1}
-                                    max={3}
-                                    step={0.05}
-                                    aria-labelledby="Zoom"
-                                    onChange={(e, zoom) => setZoom(zoom as number)}
-                                />
-                            </div>
-                            <div>
-                                <Typography variant="overline">
-                                    Rotation
-                                </Typography>
-                                <Slider
-                                    value={rotation}
-                                    min={0}
-                                    max={360}
-                                    step={1}
-                                    aria-labelledby="Rotation"
-                                    onChange={(e, rotation) =>
-                                        setRotation(rotation as number)
-                                    }
-                                />
-                            </div>
-                            <Button
-                                onClick={showCroppedImage}
-                                variant="contained"
-                                color="primary"
-                            >
-                                Show Result
-                            </Button>
-                        </div>
+                        <CropControls
+                            className={styles.controls}
+                            zoom={zoom}
+                            setZoom={setZoom}
+                            // rotation={rotation}
+                            // setRotation={setRotation}
+                            duration={duration}
+                            setDuration={setDuration}
+                            amplitude={amplitude}
+                            setAmplitude={setAmplitude}
+                            showCroppedImage={showCroppedImage}
+                        />
                     </div>
                 </React.Fragment>
             ) : (
                 <input type="file" onChange={onFileChange} accept="image/*" />
             )}
             <div style={{position: 'fixed', left: x, top: y}}>
-                qqqq
+                animate
             </div>
         </div>
     );

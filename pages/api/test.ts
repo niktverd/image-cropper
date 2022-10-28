@@ -12,12 +12,6 @@ export const config = {
     }
 };
 
-const SIZES = {
-    small: 200,
-    medium: 400,
-    large: 800
-};
-
 const isFile = (file: File | File[]): file is File => {
     return (file as File).filepath !== undefined;
 }
@@ -61,12 +55,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         ln: req.query.ln,
         fn: req.query.fn,
     };
-    const size = req.query.croppedImageSize ?? "small";
-
-    // const dogPath = path.join(
-    //     serverRuntimeConfig.PROJECT_ROOT,
-    //     `./public/dog-${SIZES[size as string]}.jpeg`
-    // );
+    
     async function crop(imgPath: string) {
         const dogImage = sharp(imgPath);
         dogImage.metadata()
