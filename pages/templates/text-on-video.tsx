@@ -78,7 +78,7 @@ const Demo = () => {
         const body = new FormData();
         body.append("file", imgFile as unknown as string, "fileName");
         const response = await fetch(
-            `/api/cropped-adult-ch-animated?${url.toString()}`,
+            `/api/text-on-video?${url.toString()}`,
             {
                 method: "POST",
                 body,
@@ -99,7 +99,7 @@ const Demo = () => {
             {imageSrc ? (
                 <React.Fragment>
                     <div className={styles.container}>
-                        <div className={styles.cropper}>
+                        {/* <div className={styles.cropper}>
                             <Cropper
                                 // className={styles.cropper}
                                 image={imageSrc as string}
@@ -112,16 +112,16 @@ const Demo = () => {
                                 onCropComplete={onCropComplete}
                                 onZoomChange={setZoom}
                             />
-                        </div>
+                        </div> */}
 
                         <CropControls
                             className={styles.controls}
-                            zoom={zoom}
-                            setZoom={setZoom}
+                            // zoom={zoom}
+                            // setZoom={setZoom}
                             // rotation={rotation}
                             // setRotation={setRotation}
-                            duration={duration}
-                            setDuration={setDuration}
+                            // duration={duration}
+                            // setDuration={setDuration}
                             amplitude={amplitude}
                             setAmplitude={setAmplitude}
                             variant={variant}
@@ -131,10 +131,10 @@ const Demo = () => {
                     </div>
                 </React.Fragment>
             ) : (
-                <input type="file" onChange={onFileChange} accept="image/*" />
+                <input type="file" onChange={onFileChange} accept="video/*" />
             )}
             <div style={{position: 'fixed', left: x, top: y}}>
-                animate
+                text on video
             </div>
         </div>
     );

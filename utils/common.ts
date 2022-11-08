@@ -7,7 +7,7 @@ export const isFile = (file: File | File[]): file is File => {
 }
 
 export const prepareParams = (req: NextApiRequest) => {
-    const variant = (req.query.rotation as Variants) ?? Variants.SimplifiedLite;
+    const variant = (req.query.variant as Variants) ?? Variants.SimplifiedLite;
     const rotation = parseFloat((req.query.rotation as string) ?? "0");
     const amplitude = parseFloat((req.query.amplitude as string) ?? "10");
     const duration = parseFloat((req.query.duration as string) ?? "100");

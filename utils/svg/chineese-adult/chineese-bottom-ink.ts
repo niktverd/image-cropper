@@ -1,4 +1,4 @@
-export default function getChAdultBottomSvg({fill = "#ff00ff", stroke = "#000000", resize = 1}) {
+export default function getSvg({fill = "#ff00ff", stroke = "#000000", resize = 1}) {
     return `
         <svg
             width="${Math.round(800 * resize)}"

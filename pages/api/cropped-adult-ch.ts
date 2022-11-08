@@ -37,7 +37,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         console.log(`Rotated image size is ${meta.width}x${meta.height}`);
         console.log(`Cropping...`, cropInfo);
-
+        console.log({variant});
         const svgs = getSvgByVariant(variant);
         
         console.log('got here - 3');
@@ -45,24 +45,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log('got here - 4', cropInfo);
         const dogImageResized = dogImageCropped.resize(994, 994);
 
-
-
         return await dogImageResized
             .composite([
                 {
-                    input: getChineeseText(svgs.bottom, 1.3),
-                    top: 700 + Math.floor(90 * Math.random()),
-                    left: 210 + Math.floor(50 * Math.random()),
-                },
-                {
                     input: getChineeseText(svgs.top),
                     top: 0 + Math.floor(90 * Math.random()),
-                    left: 210 + Math.floor(90 * Math.random()),
+                    left: 110 + Math.floor(90 * Math.random()),
+                },
+                {
+                    input: getChineeseText(svgs.bottom, 1.1),
+                    top: 700 + Math.floor(90 * Math.random()),
+                    left: 150 + Math.floor(50 * Math.random()),
                 },
                 {
                     input: getChineeseText(svgs.center),
-                    top: 500 + Math.floor(120 * Math.random()),
-                    left: 220 + Math.floor(50 * Math.random()),
+                    top: 450 + Math.floor(120 * Math.random()),
+                    left: 250 + Math.floor(50 * Math.random()),
                 },
                 {
                     input: getChineeseText(svgs.left),
