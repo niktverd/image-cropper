@@ -25,9 +25,15 @@ export type CropControlsProps = {
     showCroppedImage?: () => void;
     variant?: Variants;
     setVariant?: (variant: Variants) => void;
+    ratio?: number;
+    setRatio?: (ratio: number) => void;
 };
 
-const VariantButton = ({type, variant, setVariant}: {
+const VariantButton = ({
+    type,
+    variant,
+    setVariant,
+}: {
     type?: Variants;
     variant?: Variants;
     setVariant?: (variant: Variants) => void;
@@ -36,9 +42,7 @@ const VariantButton = ({type, variant, setVariant}: {
         <Button
             onClick={() => setVariant?.(type || Variants.SimplifiedLite)}
             variant="contained"
-            color={
-                type === variant ? "secondary" : "default"
-            }
+            color={type === variant ? "secondary" : "default"}
         >
             {type}
         </Button>
@@ -58,6 +62,8 @@ export const CropControls: NextPage<CropControlsProps> = ({
     showCroppedImage,
     variant,
     setVariant,
+    ratio,
+    setRatio,
 }) => {
     return (
         <div className={className}>
@@ -119,13 +125,60 @@ export const CropControls: NextPage<CropControlsProps> = ({
                     />
                 </div>
             )}
-            {setVariant && <div style={{ padding: 10 }}>
-                <VariantButton type={Variants.None} variant={variant} setVariant={setVariant} />
-                <VariantButton type={Variants.SimplifiedHot} variant={variant} setVariant={setVariant} />
-                <VariantButton type={Variants.SimplifiedLite} variant={variant} setVariant={setVariant} />
-                <VariantButton type={Variants.TraditionalHot} variant={variant} setVariant={setVariant} />
-                <VariantButton type={Variants.TraditionalLite} variant={variant} setVariant={setVariant} />
-            </div>}
+            {setVariant && (
+                <div style={{ padding: 10 }}>
+                    <VariantButton
+                        type={Variants.None}
+                        variant={variant}
+                        setVariant={setVariant}
+                    />
+                    <VariantButton
+                        type={Variants.SimplifiedHot}
+                        variant={variant}
+                        setVariant={setVariant}
+                    />
+                    <VariantButton
+                        type={Variants.SimplifiedLite}
+                        variant={variant}
+                        setVariant={setVariant}
+                    />
+                    <VariantButton
+                        type={Variants.TraditionalHot}
+                        variant={variant}
+                        setVariant={setVariant}
+                    />
+                    <VariantButton
+                        type={Variants.TraditionalLite}
+                        variant={variant}
+                        setVariant={setVariant}
+                    />
+                </div>
+            )}
+            {setRatio && (
+                <div style={{ padding: 10 }}>
+                    <Button
+                        color={ratio === 1 ? "secondary" : "default"}
+                        variant="contained"
+                        onClick={() => setRatio(1)}
+                    >
+                        Square
+                    </Button>
+                    <Button
+                        color={ratio === 16 / 9 ? "secondary" : "default"}
+                        variant="contained"
+                        onClick={() => setRatio(16 / 9)}
+                    >
+                        Horizontal
+                    </Button>
+                    <Button
+                        color={ratio === 9 / 16 ? "secondary" : "default"}
+                        variant="contained"
+                        onClick={() => setRatio(9 / 16)}
+                    >
+                        Vertical
+                    </Button>
+                </div>
+            )}
             {showCroppedImage && (
                 <Button
                     onClick={showCroppedImage}

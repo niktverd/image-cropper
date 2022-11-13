@@ -1,13 +1,27 @@
-export default function getSvg({fill = "#ff00ff", stroke = "#000000", resize = 2}) {
-    return `
+import { calculateSvgSize } from "../../../svg";
+
+export default function getSvg({fill = "#ff00ff", stroke = "#000000", maxWidth = 100, maxHeight = 100}) {
+    const width = 56,
+        height = 13;
+
+    const calcSize = calculateSvgSize({
+        maxWidth,
+        maxHeight,
+        width,
+        height,
+    });
+
+    const { calculatedWidth, calculatedHeight, viewBox } = calcSize;
+
+    const svg = `
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="${Math.round(800 * resize)}"
-        height="${Math.round(108 * resize)}" 
+        viewBox="${viewBox}"
+        width="${calculatedWidth}"
+        height="${calculatedHeight}"
         opacity="1"
         fill="${fill}"
         stroke="${stroke}"
-        viewBox="-5 -5 66.356 22.229"
     >
     
     <g aria-label="让她那里水流不止" style="font-style:normal;font-weight:400;font-size:13.9764328px;line-height:1.25;font-family:sans-serif;letter-spacing:0;word-spacing:0">
@@ -26,4 +40,9 @@ export default function getSvg({fill = "#ff00ff", stroke = "#000000", resize = 2
 
 
     `;
+
+    return {
+        ...calcSize,
+        svg,
+    };
 }

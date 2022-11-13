@@ -42,8 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).send("");
     });
 
-    console.log({req})
-    const {amplitude, rotation, duration, cropInfo, variant} = prepareParams(req);
+    const {amplitude, rotation, duration, cropInfo, variant, ratio} = prepareParams(req);
     
     async function crop(imgPath: string) {
         const dogImage = sharp(imgPath);
@@ -60,10 +59,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log(`Rotated image size is ${meta.width}x${meta.height}`);
 
         console.log(`Cropping...`, cropInfo);
+        let totalWidth = Math.round(ratio >= 1 ? 1000 : 1000  * ratio);
+        let totalHeight = Math.round(ratio <= 1 ? 1000 : 1000 / ratio);
+
+        if (totalWidth % 2) {
+            totalWidth += 1;
+        }
+
+        if (totalHeight % 2) {
+            totalHeight += 1;
+        }
 
         const texts = loadTexts({
             variant,
             amplitude,
+            totalWidth,
+            totalHeight,
         });
 
         if(!existsSync(outFolder)) {
@@ -95,7 +106,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log('got here - 3');
         const dogImageCropped = dogImage.extract(cropInfo);
         console.log('got here - 4', cropInfo);
-        const dogImageResized = dogImageCropped.resize(994, 994);
+        const dogImageResized = dogImageCropped.resize(totalWidth, totalHeight);
 
 
         for (let i = 0; i < duration; i++) {

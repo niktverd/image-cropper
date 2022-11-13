@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
-import { CropControls, Variants } from "../../src/components/CropControls/CropControls";
+import {
+    CropControls,
+    Variants,
+} from "../../src/components/CropControls/CropControls";
 
 import styles from "../../styles/DefaultCrop.module.css";
 
@@ -9,16 +12,19 @@ const Demo = () => {
     const [imageSrc, setImageSrc] = React.useState<unknown>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
-    const [ration, setRatio] = useState(1);
+    const [ratio, setRatio] = useState(1);
     const [rotation, setRotation] = useState(0);
     const [variant, setVariant] = useState(Variants.SimplifiedLite);
 
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
 
-    const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
-        setCroppedAreaPixels(croppedAreaPixels);
-    }, []);
+    const onCropComplete = useCallback(
+        (_croppedArea: any, croppedAreaPixels: any) => {
+            setCroppedAreaPixels(croppedAreaPixels);
+        },
+        []
+    );
 
     const showCroppedImage = useCallback(async () => {
         try {
@@ -28,7 +34,7 @@ const Demo = () => {
         } catch (e) {
             console.error(e);
         }
-    }, [imageSrc, croppedAreaPixels, rotation, variant]);
+    }, [imageSrc, croppedAreaPixels, rotation, variant, ratio]);
 
     const onClose = useCallback(() => {
         setCroppedImage(null);
@@ -51,14 +57,15 @@ const Demo = () => {
         }
         type SearchParamType = {};
         const params: SearchParamType = {
-            ...(croppedAreaPixels as unknown as object),
+            ...((croppedAreaPixels as unknown) as object),
             rotation: String(0),
             variant: String(variant),
             croppedImageSize: "small",
+            ratio: String(ratio),
         };
         const url = new URLSearchParams(params);
         const body = new FormData();
-        body.append("file", imgFile as unknown as string, "fileName");
+        body.append("file", (imgFile as unknown) as string, "fileName");
         const response = await fetch(
             `/api/cropped-adult-ch?${url.toString()}`,
             {
@@ -70,10 +77,14 @@ const Demo = () => {
         const imageImage = await response.blob();
         // console.log(imageImage);
         // console.log(URL.createObjectURL(imageImage));
-        setCroppedImage(URL.createObjectURL(imageImage) as unknown as (prevState: null) => null);
+        setCroppedImage(
+            (URL.createObjectURL(imageImage) as unknown) as (
+                prevState: null
+            ) => null
+        );
     };
     if (croppedImage) {
-        return <img src={croppedImage ?? ''} height={400} width="auto" />;
+        return <img src={croppedImage ?? ""} height={400} width="auto" />;
     }
 
     return (
@@ -88,14 +99,13 @@ const Demo = () => {
                                 crop={crop}
                                 rotation={rotation}
                                 zoom={zoom}
-                                aspect={ration}
+                                aspect={ratio}
                                 onCropChange={setCrop}
                                 onRotationChange={setRotation}
                                 onCropComplete={onCropComplete}
                                 onZoomChange={setZoom}
                             />
                         </div>
-
 
                         <CropControls
                             className={styles.controls}
@@ -110,6 +120,8 @@ const Demo = () => {
                             variant={variant}
                             setVariant={setVariant}
                             showCroppedImage={showCroppedImage}
+                            ratio={ratio}
+                            setRatio={setRatio}
                         />
                     </div>
                 </React.Fragment>

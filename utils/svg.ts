@@ -29,68 +29,130 @@ import getChAdultLeftLiteTraditionalSvg from "./svg/chineese-adult/lite.min/trad
 import getChAdultTopLiteTraditionalSvg from "./svg/chineese-adult/lite.min/traditional-top";
 
 export type LoadTextArgs = {
-    variant: Variants,
-    amplitude: number,
+    variant: Variants;
+    amplitude: number;
+    totalWidth: number;
+    totalHeight: number;
 };
 
-export const loadTexts = ({variant, amplitude}: LoadTextArgs) => {
+export const loadTexts = ({
+    variant,
+    amplitude,
+    totalWidth,
+    totalHeight,
+}: LoadTextArgs) => {
     const texts: {
-        wBottom?: any,
-        wTop?: any,
-        wLeft?: any,
-        wCenter?: any,
+        wBottom?: any;
+        wTop?: any;
+        wLeft?: any;
+        wCenter?: any;
     } = {
         wBottom: undefined,
         wTop: undefined,
         wLeft: undefined,
         wCenter: undefined,
     };
-    console.log({variant});
+    console.log({ variant });
     if (variant !== Variants.None) {
         const svgs = getSvgByVariant(variant);
 
-        const chBottom = getChineeseText(svgs.bottom);
-        const chTop = getChineeseText(svgs.top);
-        const chCenter = getChineeseText(svgs.center);
-        const chLeft = getChineeseText(svgs.left);
-        
-        texts.wBottom  = wiggle({
-            input: chBottom,
-            topBase: 700 + Math.floor(90 * Math.random()),
-            leftBase: 10 + Math.floor(50 * Math.random()),
+        const chBottom = getChineeseText(svgs.bottom, {
+            maxWidth: Math.floor(totalWidth * 0.8),
+            maxHeight: Math.floor(totalHeight * 0.3),
+        });
+        const chTop = getChineeseText(svgs.top, {
+            maxWidth: Math.floor(totalWidth * 0.8),
+            maxHeight: Math.floor(totalHeight * 0.3),
+        });
+        const chCenter = getChineeseText(svgs.center, {
+            maxWidth: Math.floor(totalWidth * 0.45),
+            maxHeight: Math.floor(totalHeight * 0.45),
+        });
+        const chLeft = getChineeseText(svgs.left, {
+            maxWidth: Math.floor(totalWidth * 0.3),
+            maxHeight: Math.floor(totalHeight * 0.9),
+        });
+
+        texts.wBottom = wiggle({
+            input: chBottom.image,
+            topBase:
+                totalHeight -
+                chBottom.maxHeight +
+                Math.floor(
+                    Math.random() *
+                        (chBottom.maxHeight - chBottom.calculatedHeight)
+                ),
+            leftBase:
+                totalWidth -
+                chBottom.maxWidth +
+                Math.floor(
+                    Math.random() *
+                        (chBottom.maxWidth - chBottom.calculatedWidth)
+                ),
             maxDistance: amplitude,
         });
 
-        texts.wTop  = wiggle({
-            input: chTop,
-            topBase: 0 + Math.floor(90 * Math.random()),
-            leftBase: 10 + Math.floor(90 * Math.random()),
+        texts.wTop = wiggle({
+            input: chTop.image,
+            topBase:
+                0 +
+                Math.floor(
+                    Math.random() * (chTop.maxHeight - chTop.calculatedHeight)
+                ),
+            leftBase:
+                0.2 * totalWidth +
+                Math.floor(
+                    Math.random() * (chTop.maxWidth - chTop.calculatedWidth)
+                ),
             maxDistance: amplitude,
         });
 
-        texts.wCenter  = wiggle({
-            input: chCenter,
-            topBase: 500 + Math.floor(120 * Math.random()),
-            leftBase: 220 + Math.floor(50 * Math.random()),
+        texts.wCenter = wiggle({
+            input: chCenter.image,
+            topBase: Math.floor(
+                chTop.maxHeight +
+                    Math.random() *
+                        (chCenter.maxHeight - chCenter.calculatedHeight)
+            ),
+            leftBase:
+                0.2 * totalWidth +
+                Math.floor(
+                    Math.random() *
+                        (chCenter.maxWidth - chCenter.calculatedWidth)
+                ),
             maxDistance: amplitude,
         });
 
-        texts.wLeft  = wiggle({
-            input: chLeft,
-            topBase: 0 + Math.floor(90 * Math.random()),
-            leftBase: 0 + Math.floor(90 * Math.random()),
+        texts.wLeft = wiggle({
+            input: chLeft.image,
+            topBase:
+                0 +
+                Math.floor(
+                    Math.random() * (chLeft.maxHeight - chLeft.calculatedHeight)
+                ),
+            leftBase:
+                0 +
+                +Math.floor(
+                    Math.random() * (chLeft.maxWidth - chLeft.calculatedWidth)
+                ),
             maxDistance: amplitude,
         });
     }
 
     return texts;
-}
+};
 
-export const getChineeseText = (getterForSvg: any, resize = 1) => {
-    const bottomColor = genColors();
-    const resizeBottom = 0.85 + 0.4 * Math.random() * resize;
-    const svg = getterForSvg({...bottomColor, resize: resizeBottom});
-    return Buffer.from(svg);
+export const getChineeseText = (
+    getterForSvg: any,
+    { maxWidth, maxHeight }: { maxWidth?: number; maxHeight?: number }
+) => {
+    const colors = genColors();
+    const { svg, ...rest } = getterForSvg({ ...colors, maxWidth, maxHeight });
+    // console.log(rest);
+    return {
+        ...rest,
+        image: Buffer.from(svg),
+    };
 };
 
 export const getSvgByVariant = (variant: Variants) => {
@@ -134,5 +196,62 @@ export const getSvgByVariant = (variant: Variants) => {
         top: getChAdultTopSvg,
         center: getChAdultCenterSvg,
         left: getChAdultLeftSvg,
+    };
+};
+
+type CalcViewBoxArgs = {
+    width: number;
+    height: number;
+    dw: number;
+    dh: number;
+};
+
+export const calcViewBox = ({ width, height, dw, dh }: CalcViewBoxArgs) =>
+    `-${dw} -${dh} ${width + 2 * dw} ${height + 2 * dh}`;
+
+type CalculateSvgSizeArgs = {
+    width: number;
+    height: number;
+    maxWidth: number;
+    maxHeight: number;
+};
+
+export const calculateSvgSize = ({
+    width,
+    height,
+    maxWidth,
+    maxHeight,
+}: CalculateSvgSizeArgs) => {
+    const dw = width * 0.3;
+    const dh = height * 0.3;
+
+    const ratio = width / height;
+
+    const inputRatio = maxWidth / maxHeight;
+
+    let multiplier = maxWidth / width;
+
+    if (ratio < inputRatio) {
+        multiplier = maxHeight / height;
     }
-}
+
+    multiplier *= Math.random() * 0.1 + 0.9;
+
+    const calculatedWidth = Math.round(width * multiplier),
+        calculatedHeight = Math.round(height * multiplier);
+
+    const viewBox = calcViewBox({ width, height, dw, dh });
+
+    return {
+        dw,
+        dh,
+        ratio,
+        inputRatio,
+        multiplier,
+        calculatedWidth,
+        calculatedHeight,
+        viewBox,
+        maxWidth,
+        maxHeight,
+    };
+};

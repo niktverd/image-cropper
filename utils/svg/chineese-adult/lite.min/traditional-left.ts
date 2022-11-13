@@ -1,10 +1,24 @@
-export default function getSvg({fill = "#ff00ff", stroke = "#000000", resize = 2}) {
-    return `
+import { calculateSvgSize } from "../../../svg";
+
+export default function getSvg({fill = "#ff00ff", stroke = "#000000", maxWidth = 100, maxHeight = 100}) {
+    const width = 29,
+        height = 212;
+
+    const calcSize = calculateSvgSize({
+        maxWidth,
+        maxHeight,
+        width,
+        height,
+    });
+
+    const { calculatedWidth, calculatedHeight, viewBox } = calcSize;
+
+    const svg = `
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="-8 -8 45 222"
-        width="${Math.round(120 * resize)}"
-        height="${Math.round(800 * resize)}" 
+        viewBox="${viewBox}"
+        width="${calculatedWidth}"
+        height="${calculatedHeight}"
         opacity="1"
         fill="${fill}"
         stroke="${stroke}"
@@ -26,4 +40,10 @@ export default function getSvg({fill = "#ff00ff", stroke = "#000000", resize = 2
 
 
     `;
+
+
+    return {
+        ...calcSize,
+        svg,
+    };
 }

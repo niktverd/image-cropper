@@ -1,6 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
-import { CropControls, Variants } from "../../src/components/CropControls/CropControls";
+import {
+    CropControls,
+    Variants,
+} from "../../src/components/CropControls/CropControls";
 
 import styles from "../../styles/DefaultCrop.module.css";
 
@@ -9,7 +12,7 @@ const Demo = () => {
     const [imageSrc, setImageSrc] = React.useState<unknown>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
-    const [ration, setRatio] = useState(1);
+    const [ratio, setRatio] = useState(1);
     const [rotation, setRotation] = useState(0);
     const [amplitude, setAmplitude] = useState(10);
     const [duration, setDuration] = useState(350);
@@ -28,13 +31,15 @@ const Demo = () => {
             setY(50 + 3 * (0.5 + Math.cos(stepY)));
             setStepX(stepX + 0.3 * Math.random());
             setStepY(stepY + 0.3 * Math.random());
-
         }, 10);
-    }, [stepX])
+    }, [stepX]);
 
-    const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
-        setCroppedAreaPixels(croppedAreaPixels);
-    }, []);
+    const onCropComplete = useCallback(
+        (_croppedArea: any, croppedAreaPixels: any) => {
+            setCroppedAreaPixels(croppedAreaPixels);
+        },
+        []
+    );
 
     const showCroppedImage = useCallback(async () => {
         try {
@@ -44,11 +49,15 @@ const Demo = () => {
         } catch (e) {
             console.error(e);
         }
-    }, [imageSrc, croppedAreaPixels, rotation, amplitude, duration, variant]);
-
-    // const onClose = useCallback(() => {
-    //     setCroppedImage(null);
-    // }, []);
+    }, [
+        imageSrc,
+        croppedAreaPixels,
+        rotation,
+        amplitude,
+        duration,
+        variant,
+        ratio,
+    ]);
 
     const onFileChange = async (e: any) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -67,17 +76,18 @@ const Demo = () => {
         }
         type SearchParamType = {};
         const params: SearchParamType = {
-            ...(croppedAreaPixels as unknown as object),
+            ...((croppedAreaPixels as unknown) as object),
             rotation: String(0),
-            amplitude: String(amplitude), 
-            duration: String(duration), 
+            amplitude: String(amplitude),
+            duration: String(duration),
             croppedImageSize: "small",
             variant: String(variant),
+            ratio: String(ratio),
         };
         const url = new URLSearchParams(params);
         // console.log({amplitude, url});
         const body = new FormData();
-        body.append("file", imgFile as unknown as string, "fileName");
+        body.append("file", (imgFile as unknown) as string, "fileName");
         const response = await fetch(
             `/api/cropped-adult-ch-animated?${url.toString()}`,
             {
@@ -89,10 +99,14 @@ const Demo = () => {
         const imageImage = await response.blob();
         // console.log(imageImage);
         // console.log(URL.createObjectURL(imageImage));
-        setCroppedImage(URL.createObjectURL(imageImage) as unknown as (prevState: null) => null);
+        setCroppedImage(
+            (URL.createObjectURL(imageImage) as unknown) as (
+                prevState: null
+            ) => null
+        );
     };
     if (croppedImage) {
-        return <img src={croppedImage ?? ''} height={400} width="auto" />;
+        return <img src={croppedImage ?? ""} height={400} width="auto" />;
     }
 
     return (
@@ -107,7 +121,7 @@ const Demo = () => {
                                 crop={crop}
                                 rotation={rotation}
                                 zoom={zoom}
-                                aspect={ration}
+                                aspect={ratio}
                                 onCropChange={setCrop}
                                 onRotationChange={setRotation}
                                 onCropComplete={onCropComplete}
@@ -128,13 +142,15 @@ const Demo = () => {
                             variant={variant}
                             setVariant={setVariant}
                             showCroppedImage={showCroppedImage}
+                            ratio={ratio}
+                            setRatio={setRatio}
                         />
                     </div>
                 </React.Fragment>
             ) : (
                 <input type="file" onChange={onFileChange} accept="image/*" />
             )}
-            <div style={{position: 'fixed', left: x, top: y}}>
+            <div style={{ position: "fixed", left: x, top: y }}>
                 animate : {variant}
             </div>
         </div>
