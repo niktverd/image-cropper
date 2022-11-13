@@ -5,6 +5,7 @@ import Typography from "@material-ui/core/Typography";
 import { useState } from "react";
 
 export enum Variants {
+    None = "none",
     TraditionalHot = "traditional-hot",
     TraditionalLite = "traditional-lite",
     SimplifiedHot = "simplified-hot",
@@ -119,6 +120,7 @@ export const CropControls: NextPage<CropControlsProps> = ({
                 </div>
             )}
             {setVariant && <div style={{ padding: 10 }}>
+                <VariantButton type={Variants.None} variant={variant} setVariant={setVariant} />
                 <VariantButton type={Variants.SimplifiedHot} variant={variant} setVariant={setVariant} />
                 <VariantButton type={Variants.SimplifiedLite} variant={variant} setVariant={setVariant} />
                 <VariantButton type={Variants.TraditionalHot} variant={variant} setVariant={setVariant} />

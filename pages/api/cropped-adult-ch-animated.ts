@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import sharp from 'sharp';
 import { IncomingForm } from 'formidable';
-import { wiggle } from "../../utils/wiggle";
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
 
 import pathToFfmpeg from 'ffmpeg-static';
@@ -10,7 +9,7 @@ import util from 'util';
 import {exec as _exec} from 'child_process';
 import { shuffle } from "lodash";
 import { isFile, prepareParams } from "../../utils/common";
-import { getChineeseText, getSvgByVariant } from "../../utils/svg";
+import { loadTexts } from "../../utils/svg";
 
 const exec = util.promisify(_exec);
 
@@ -43,6 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).send("");
     });
 
+    console.log({req})
     const {amplitude, rotation, duration, cropInfo, variant} = prepareParams(req);
     
     async function crop(imgPath: string) {
@@ -61,44 +61,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         console.log(`Cropping...`, cropInfo);
 
-        const svgs = getSvgByVariant(variant);
-
-        const chBottom = getChineeseText(svgs.bottom);
-        const chTop = getChineeseText(svgs.top);
-        const chCenter = getChineeseText(svgs.center);
-        const chLeft = getChineeseText(svgs.left);
-        
-        console.log('got here - 3');
-        const dogImageCropped = dogImage.extract(cropInfo);
-        console.log('got here - 4', cropInfo);
-        const dogImageResized = dogImageCropped.resize(994, 994);
-
-        const wBottom  = wiggle({
-            input: chBottom,
-            topBase: 700 + Math.floor(90 * Math.random()),
-            leftBase: 10 + Math.floor(50 * Math.random()),
-            maxDistance: amplitude,
-        });
-
-        const wTop  = wiggle({
-            input: chTop,
-            topBase: 0 + Math.floor(90 * Math.random()),
-            leftBase: 10 + Math.floor(90 * Math.random()),
-            maxDistance: amplitude,
-        });
-
-        const wCenter  = wiggle({
-            input: chCenter,
-            topBase: 500 + Math.floor(120 * Math.random()),
-            leftBase: 220 + Math.floor(50 * Math.random()),
-            maxDistance: amplitude,
-        });
-
-        const wLeft  = wiggle({
-            input: chLeft,
-            topBase: 0 + Math.floor(90 * Math.random()),
-            leftBase: 0 + Math.floor(90 * Math.random()),
-            maxDistance: amplitude,
+        const texts = loadTexts({
+            variant,
+            amplitude,
         });
 
         if(!existsSync(outFolder)) {
@@ -120,11 +85,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             unlinkSync(`${outFolder}/frames/${f}`);
         }
 
-        const vodeos = readdirSync(`${outFolder}/video`);
+        const videos = readdirSync(`${outFolder}/video`);
 
-        for (const f of vodeos) {
+        for (const f of videos) {
             unlinkSync(`${outFolder}/video/${f}`);
         }
+
+
+        console.log('got here - 3');
+        const dogImageCropped = dogImage.extract(cropInfo);
+        console.log('got here - 4', cropInfo);
+        const dogImageResized = dogImageCropped.resize(994, 994);
+
 
         for (let i = 0; i < duration; i++) {
             if (i % 20 === 0) {
@@ -133,18 +105,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
             await dogImageResized
                 .composite([
-                    wBottom(i*0.2),
-                    wTop(i*0.1),
-                    wCenter(i*0.15),
-                    wLeft(i*0.25),
-                ])
+                    texts.wBottom?.(i*0.2),
+                    texts.wTop?.(i*0.1),
+                    texts.wCenter?.(i*0.15),
+                    texts.wLeft?.(i*0.25),
+                ].filter(Boolean))
                 .png()
                 .toFile(`${outFolder}/frames/${i}.png`);
         }
 
 
 
-        const frames = readdirSync(`${outFolder}/frames`);
+        // const frames = readdirSync(`${outFolder}/frames`);
         const publicFolder = readdirSync(`./public`);
 
         
@@ -156,42 +128,42 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         await delay(3000);
 
-        const images = frames.map(img => `${outFolder}/frames/${img}` );
+        // const images = frames.map(img => `${outFolder}/frames/${img}` );
 
         const outputFolder = `${outFolder}/frames`;
         const videoEncoder = 'h264';
         console.log('Encoding');
-        await exec(`"${pathToFfmpeg}" -start_number 1 -i ${outputFolder}/%d.png -vcodec ${videoEncoder} -pix_fmt yuv420p ${outFolder}/video/no-audio.mp4`);
+        await exec(`"${pathToFfmpeg}" -start_number 1 -i ${outputFolder}/%d.png -vcodec ${videoEncoder} -pix_fmt yuv420p ${outFolder}/video/${variant}-${amplitude}-${duration}-no-audio.mp4`);
 
         // Copy audio from original video
         console.log('Adding audio', audio);
-        await exec(`"${pathToFfmpeg}" -i ${outFolder}/video/no-audio.mp4 -i ${audio} -shortest ${outFolder}/video/with-audio-${new Date().getTime()}.mp4`);
+        await exec(`"${pathToFfmpeg}" -i ${outFolder}/video/${variant}-${amplitude}-${duration}-no-audio.mp4 -i ${audio} -shortest ${outFolder}/video/${variant}-${amplitude}-${duration}-with-audio-${new Date().getTime()}.mp4`);
 
         console.log('done');
 
         return await dogImageResized
-            .composite([
-                {
-                    input: chBottom,
-                    top: 700 + Math.floor(90 * Math.random()),
-                    left: 210 + Math.floor(50 * Math.random()),
-                },
-                {
-                    input: chTop,
-                    top: 0 + Math.floor(90 * Math.random()),
-                    left: 210 + Math.floor(90 * Math.random()),
-                },
-                {
-                    input: chCenter,
-                    top: 500 + Math.floor(120 * Math.random()),
-                    left: 220 + Math.floor(50 * Math.random()),
-                },
-                {
-                    input: chLeft,
-                    top: 0 + Math.floor(90 * Math.random()),
-                    left: 0 + Math.floor(90 * Math.random()),
-                },
-            ])
+            // .composite([
+            //     {
+            //         input: chBottom,
+            //         top: 700 + Math.floor(90 * Math.random()),
+            //         left: 210 + Math.floor(50 * Math.random()),
+            //     },
+            //     {
+            //         input: chTop,
+            //         top: 0 + Math.floor(90 * Math.random()),
+            //         left: 210 + Math.floor(90 * Math.random()),
+            //     },
+            //     {
+            //         input: chCenter,
+            //         top: 500 + Math.floor(120 * Math.random()),
+            //         left: 220 + Math.floor(50 * Math.random()),
+            //     },
+            //     {
+            //         input: chLeft,
+            //         top: 0 + Math.floor(90 * Math.random()),
+            //         left: 0 + Math.floor(90 * Math.random()),
+            //     },
+            // ])
             .png()
             .toBuffer();
     }

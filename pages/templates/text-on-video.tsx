@@ -44,7 +44,7 @@ const Demo = () => {
         } catch (e) {
             console.error(e);
         }
-    }, [imageSrc, croppedAreaPixels, rotation, amplitude, duration]);
+    }, [imageSrc, croppedAreaPixels, rotation, amplitude, duration, variant]);
 
     // const onClose = useCallback(() => {
     //     setCroppedImage(null);
@@ -72,6 +72,7 @@ const Demo = () => {
             amplitude: String(amplitude), 
             duration: String(duration), 
             croppedImageSize: "small",
+            variant: String(variant),
         };
         const url = new URLSearchParams(params);
         // console.log({amplitude, url});
@@ -134,7 +135,7 @@ const Demo = () => {
                 <input type="file" onChange={onFileChange} accept="video/*" />
             )}
             <div style={{position: 'fixed', left: x, top: y}}>
-                text on video
+                text on video : {variant}
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 import { Variants } from "../src/components/CropControls/CropControls";
 import { genColors } from "./genColors";
+import { wiggle } from "../utils/wiggle";
 
 // default
 import getChAdultBottomSvg from "./svg/chineese-adult/chineese-bottom-ink";
@@ -26,6 +27,64 @@ import getChAdultBottomLiteTraditionalSvg from "./svg/chineese-adult/lite.min/tr
 import getChAdultCenterLiteTraditionalSvg from "./svg/chineese-adult/lite.min/traditional-center";
 import getChAdultLeftLiteTraditionalSvg from "./svg/chineese-adult/lite.min/traditional-left";
 import getChAdultTopLiteTraditionalSvg from "./svg/chineese-adult/lite.min/traditional-top";
+
+export type LoadTextArgs = {
+    variant: Variants,
+    amplitude: number,
+};
+
+export const loadTexts = ({variant, amplitude}: LoadTextArgs) => {
+    const texts: {
+        wBottom?: any,
+        wTop?: any,
+        wLeft?: any,
+        wCenter?: any,
+    } = {
+        wBottom: undefined,
+        wTop: undefined,
+        wLeft: undefined,
+        wCenter: undefined,
+    };
+    console.log({variant});
+    if (variant !== Variants.None) {
+        const svgs = getSvgByVariant(variant);
+
+        const chBottom = getChineeseText(svgs.bottom);
+        const chTop = getChineeseText(svgs.top);
+        const chCenter = getChineeseText(svgs.center);
+        const chLeft = getChineeseText(svgs.left);
+        
+        texts.wBottom  = wiggle({
+            input: chBottom,
+            topBase: 700 + Math.floor(90 * Math.random()),
+            leftBase: 10 + Math.floor(50 * Math.random()),
+            maxDistance: amplitude,
+        });
+
+        texts.wTop  = wiggle({
+            input: chTop,
+            topBase: 0 + Math.floor(90 * Math.random()),
+            leftBase: 10 + Math.floor(90 * Math.random()),
+            maxDistance: amplitude,
+        });
+
+        texts.wCenter  = wiggle({
+            input: chCenter,
+            topBase: 500 + Math.floor(120 * Math.random()),
+            leftBase: 220 + Math.floor(50 * Math.random()),
+            maxDistance: amplitude,
+        });
+
+        texts.wLeft  = wiggle({
+            input: chLeft,
+            topBase: 0 + Math.floor(90 * Math.random()),
+            leftBase: 0 + Math.floor(90 * Math.random()),
+            maxDistance: amplitude,
+        });
+    }
+
+    return texts;
+}
 
 export const getChineeseText = (getterForSvg: any, resize = 1) => {
     const bottomColor = genColors();

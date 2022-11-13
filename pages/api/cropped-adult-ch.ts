@@ -3,6 +3,7 @@ import sharp from 'sharp';
 import { IncomingForm } from 'formidable';
 import { getChineeseText, getSvgByVariant } from "../../utils/svg";
 import { isFile, prepareParams } from "../../utils/common";
+import { Variants } from "../../src/components/CropControls/CropControls";
 
 export const config = {
     api: {
@@ -44,30 +45,33 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const dogImageCropped = dogImage.extract(cropInfo);
         console.log('got here - 4', cropInfo);
         const dogImageResized = dogImageCropped.resize(994, 994);
+        const composition = variant !== Variants.None ?
+        [
+            {
+                input: getChineeseText(svgs.top),
+                top: 0 + Math.floor(90 * Math.random()),
+                left: 110 + Math.floor(90 * Math.random()),
+            },
+            {
+                input: getChineeseText(svgs.bottom, 1.1),
+                top: 700 + Math.floor(90 * Math.random()),
+                left: 150 + Math.floor(50 * Math.random()),
+            },
+            {
+                input: getChineeseText(svgs.center),
+                top: 450 + Math.floor(120 * Math.random()),
+                left: 250 + Math.floor(50 * Math.random()),
+            },
+            {
+                input: getChineeseText(svgs.left),
+                top: 0 + Math.floor(90 * Math.random()),
+                left: 0 + Math.floor(90 * Math.random()),
+            },
+        ]
+        : [];
 
         return await dogImageResized
-            .composite([
-                {
-                    input: getChineeseText(svgs.top),
-                    top: 0 + Math.floor(90 * Math.random()),
-                    left: 110 + Math.floor(90 * Math.random()),
-                },
-                {
-                    input: getChineeseText(svgs.bottom, 1.1),
-                    top: 700 + Math.floor(90 * Math.random()),
-                    left: 150 + Math.floor(50 * Math.random()),
-                },
-                {
-                    input: getChineeseText(svgs.center),
-                    top: 450 + Math.floor(120 * Math.random()),
-                    left: 250 + Math.floor(50 * Math.random()),
-                },
-                {
-                    input: getChineeseText(svgs.left),
-                    top: 0 + Math.floor(90 * Math.random()),
-                    left: 0 + Math.floor(90 * Math.random()),
-                },
-            ])
+            .composite(composition)
             .png()
             .toBuffer();
     }
