@@ -148,7 +148,6 @@ export const getChineeseText = (
 ) => {
     const colors = genColors();
     const { svg, ...rest } = getterForSvg({ ...colors, maxWidth, maxHeight });
-    // console.log(rest);
     return {
         ...rest,
         image: Buffer.from(svg),

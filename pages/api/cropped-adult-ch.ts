@@ -41,6 +41,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log(`Rotated image size is ${meta.width}x${meta.height}`);
         console.log(`Cropping...`, cropInfo);
         console.log({ variant });
+
         const svgs = getSvgByVariant(variant);
 
         console.log("got here - 3");
@@ -55,6 +56,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             maxWidth: Math.floor(totalWidth * 0.8),
             maxHeight: Math.floor(totalHeight * 0.3),
         });
+
         const bottomEnt = getChineeseText(svgs.bottom, {
             maxWidth: Math.floor(totalWidth * 0.8),
             maxHeight: Math.floor(totalHeight * 0.3),
