@@ -108,6 +108,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const texts = loadTexts({
             variant,
             amplitude,
+            totalHeight: 10,
+            totalWidth: 10,
         })
 
 

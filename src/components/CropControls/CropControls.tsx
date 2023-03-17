@@ -27,6 +27,34 @@ export type CropControlsProps = {
     setVariant?: (variant: Variants) => void;
     ratio?: number;
     setRatio?: (ratio: number) => void;
+    setWidth?: (width: number) => void;
+    setHeight?: (height: number) => void;
+    width?: number;
+    height?: number;
+};
+
+const resolutions = [[512, 512], [1024, 500], [1280, 720], [720, 1280], [1920, 1080], [1080, 1920]];
+
+const Resolutions = ({
+    r: [width, height],
+    setWidth,
+    setHeight,
+}: {
+    r: number[];
+    setWidth: (width: number) => void;
+    setHeight: (height: number) => void;
+}) => {
+    return (
+        <Button
+            onClick={() => {
+                setWidth(width);
+                setHeight(height);
+            }}
+            variant="outlined"
+        >
+            {width} x {height}
+        </Button>
+    );
 };
 
 const VariantButton = ({
@@ -64,6 +92,10 @@ export const CropControls: NextPage<CropControlsProps> = ({
     setVariant,
     ratio,
     setRatio,
+    setHeight,
+    setWidth,
+    width,
+    height,
 }) => {
     return (
         <div className={className}>
@@ -177,6 +209,37 @@ export const CropControls: NextPage<CropControlsProps> = ({
                     >
                         Vertical
                     </Button>
+                </div>
+            )}
+            {setWidth && setHeight && (
+                <div>
+                    <div>width</div>
+                    <div>
+                        <input
+                            type="number"
+                            value={width}
+                            min={1}
+                            onChange={(e) => {
+                                setWidth(Number(e.target.value));
+                            }}
+                        />
+                    </div>
+                    <div>height</div>
+                    <div>
+                        <input
+                            type="number"
+                            value={height}
+                            min={1}
+                            onChange={(e) => {
+                                setHeight(Number(e.target.value));
+                            }}
+                        />
+                    </div>
+                    <div style={{ margin: 10 }}>
+                        {resolutions.map((resolution) => {
+                            return <Resolutions r={resolution} setHeight={setHeight} setWidth={setWidth} />;
+                        })}
+                    </div>
                 </div>
             )}
             {showCroppedImage && (
