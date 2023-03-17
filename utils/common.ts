@@ -7,11 +7,14 @@ export const isFile = (file: File | File[]): file is File => {
 };
 
 export const prepareParams = (req: NextApiRequest) => {
+    console.log(req.query);
     const variant = (req.query.variant as Variants) ?? Variants.SimplifiedLite;
     const rotation = parseFloat((req.query.rotation as string) ?? "0");
     const amplitude = parseFloat((req.query.amplitude as string) ?? "10");
     const duration = parseFloat((req.query.duration as string) ?? "100");
     const ratio = parseFloat((req.query.ratio as string) ?? "1");
+    const width = parseFloat((req.query.outWidth as string) ?? "0");
+    const height = parseFloat((req.query.outHeight as string) ?? "0");
     const cropInfo = {
         left: parseFloat((req.query.x as string) ?? "0"),
         top: parseFloat((req.query.y as string) ?? "0"),
@@ -33,5 +36,7 @@ export const prepareParams = (req: NextApiRequest) => {
         cropInfoBlack,
         variant,
         ratio,
+        width,
+        height,
     };
 };
